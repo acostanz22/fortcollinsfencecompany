@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Fort Collins Fence Company">
+  <rect width="64" height="64" rx="8" fill="#c8102e"/>
+  <path d="M14 12v40M32 12v40M50 12v40" stroke="#fff" stroke-width="4" stroke-linecap="square"/>
+  <path d="M14 26h36M14 40h36" stroke="#fff" stroke-width="4" stroke-linecap="square"/>
+</svg>
