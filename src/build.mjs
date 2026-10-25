@@ -72,6 +72,15 @@ function nav(current) {
   </header>`;
 }
 
+const OFFICE_HOURS = "Monday–Sunday: 7 am – 7 pm";
+const OFFICE_HOURS_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const OFFICE_HOURS_TIME = "7 am – 7 pm";
+
+function officeHoursBlock() {
+  const rows = OFFICE_HOURS_DAYS.map((day) => `<div><span>${day}</span><span>${OFFICE_HOURS_TIME}</span></div>`).join("");
+  return `<div class="hours-list">${rows}</div>`;
+}
+
 function footer() {
   const serviceItems = services.map((service) => `<li><a href="/${service.slug}/">${esc(service.name)}</a></li>`).join("");
   return `<footer class="site-footer">
@@ -98,6 +107,10 @@ function footer() {
           <li><a href="/contact/">Free Quote</a></li>
           <li><a href="/sitemap.xml">Sitemap</a></li>
         </ul>
+      </div>
+      <div>
+        <h2>Office Hours</h2>
+        ${officeHoursBlock()}
       </div>
     </div>
     <div class="wrap footer-bottom">
@@ -374,6 +387,7 @@ function servicePage(service) {
           <p class="side-kicker">Talk through the line</p>
           <p>Tell us the length, the gates, and the town. We will estimate this ${esc(service.name.toLowerCase())} from the property.</p>
           <p class="side-phone">${phoneLink(PHONE_DISPLAY, "phone-link-lg")}</p>
+          <p class="side-hours">${OFFICE_HOURS}</p>
           <p><a class="btn btn-red" href="/contact/">Request an estimate</a></p>
         </div>
         <div class="side-card side-card-muted">

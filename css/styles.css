@@ -477,7 +477,23 @@ p { margin: 0 0 0.9rem; }
 
 .site-footer a:hover { text-decoration: underline; }
 
-.footer-grid { grid-template-columns: 1fr 1.2fr 0.8fr; margin-bottom: 1.6rem; }
+.footer-grid { grid-template-columns: 1fr 1.2fr 0.8fr 1.3fr; margin-bottom: 1.6rem; }
+
+.hours-list {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.55rem 0 0;
+  color: rgba(244, 241, 234, 0.86);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.hours-list > div {
+  display: grid;
+  grid-template-columns: minmax(6.5rem, auto) 1fr;
+  column-gap: 1.25rem;
+  align-items: baseline;
+}
 
 .site-footer h2 {
   font-size: 1.15rem;
@@ -638,6 +654,12 @@ p { margin: 0 0 0.9rem; }
 }
 
 .side-phone { margin: 0.85rem 0 0.9rem; }
+
+.side-hours {
+  margin: 0 0 1rem;
+  color: var(--muted, #5e584f);
+  font-size: 0.95rem;
+}
 
 .phone-link-lg {
   font-size: clamp(1.45rem, 3vw, 1.9rem);
