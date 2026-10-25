@@ -329,45 +329,67 @@ function homePage() {
   });
 }
 
+function serviceGallery(service) {
+  const alt = services.find((item) => service.related.includes(item.slug) && item.image !== service.image)
+    || services.find((item) => item.slug !== service.slug && item.image !== service.image);
+  const shots = [service, alt].filter(Boolean).map((item) =>
+    `<figure class="service-shot"><img src="${item.image}" alt="${esc(item.alt)}" width="800" height="600" loading="lazy" decoding="async"></figure>`
+  ).join("");
+  return `<div class="service-gallery">${shots}</div>`;
+}
+
 function servicePage(service) {
   const pagePath = `/${service.slug}/`;
   const title = `${service.title} | ${NAME}`;
   const related = service.related.map((slug) => services.find((item) => item.slug === slug));
   const faqs = service.faqs.map(([q, a]) => ({ q, a }));
-  const body = `<section class="page-hero"><div class="wrap">
-    ${crumbs([{ name: "Services", href: "/services/" }, { name: service.name }])}
-    <div class="split">
-      <div>
-        <p class="eyebrow">${esc(NAME)}</p>
-        <h1>${esc(service.h1)}</h1>
-        <p>${esc(service.intro)}</p>
-        ${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-dark")}
-      </div>
-      <img src="${service.image}" alt="${esc(service.alt)}">
+  const body = `<div class="crumb-bar"><div class="wrap">${crumbs([{ name: "Services", href: "/services/" }, { name: service.name }])}</div></div>
+  <section class="hero slim-hero service-hero">
+    <div class="wrap service-hero-inner">
+      <p class="eyebrow">${esc(NAME)}</p>
+      <h1>${esc(service.h1)}</h1>
+      <p class="lede">${esc(service.intro)}</p>
+      <div class="hero-actions">${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-outline")}<a class="btn btn-red" href="/contact/">Get a free quote</a></div>
     </div>
-  </div></section>
-  <section class="section"><div class="wrap">
-    <div class="section-head"><h2>${esc(service.whenTitle)}</h2><p>${esc(service.whenIntro)}</p></div>
-    <div class="situation-grid">${service.when.map(([titleText, copy]) => `<article class="situation"><h3>${esc(titleText)}</h3><p>${esc(copy)}</p></article>`).join("")}</div>
-  </div></section>
-  <section class="section section-paper"><div class="wrap">
-    <div class="section-head"><h2>How the work goes</h2></div>
-    <ol class="steps">${service.process.map(([titleText, copy], index) => `<li><strong>${index + 1}. ${esc(titleText)}</strong> ${esc(copy)}</li>`).join("")}</ol>
-  </div></section>
-  <section class="section"><div class="wrap">
-    <div class="section-head"><h2>What changes the price</h2><p>We do not publish a per-foot rate. These are the items that move an estimate for this fence.</p></div>
-    <div class="factor-grid">${service.costs.map(([titleText, copy]) => `<article class="factor"><h3>${esc(titleText)}</h3><p>${esc(copy)}</p></article>`).join("")}</div>
-  </div></section>
-  <section class="section section-paper"><div class="wrap">
-    <div class="section-head"><h2>Questions about ${esc(service.name.toLowerCase())}</h2></div>
-    ${faqList(faqs)}
-  </div></section>
-  <section class="section"><div class="wrap">
-    <h2>Related fencing</h2>
-    <div class="related">${related.map((item) => `<a class="btn btn-line" href="/${item.slug}/">${esc(item.name)}</a>`).join("")}<a class="btn btn-line" href="/service-areas/fort-collins/">Fort Collins lots</a></div>
-    <div style="height:1.2rem"></div>
-    ${ctaBand(`Tell us the length, the gates, and the town. We will estimate this ${service.name.toLowerCase()} from the property.`)}
-  </div></section>`;
+  </section>
+  <section class="section service-body">
+    <div class="wrap service-layout">
+      <div class="service-main">
+        ${serviceGallery(service)}
+        <div class="service-copy">
+          <h2>${esc(service.whenTitle)}</h2>
+          <p>${esc(service.whenIntro)}</p>
+          <div class="situation-grid">${service.when.map(([titleText, copy]) => `<article class="situation"><h3>${esc(titleText)}</h3><p>${esc(copy)}</p></article>`).join("")}</div>
+          <h2>How the work goes</h2>
+          <ol class="steps">${service.process.map(([titleText, copy], index) => `<li><strong>${index + 1}. ${esc(titleText)}</strong> ${esc(copy)}</li>`).join("")}</ol>
+          <h2>What changes the price</h2>
+          <p>We do not publish a per-foot rate. These are the items that move an estimate for this fence.</p>
+          <div class="factor-grid">${service.costs.map(([titleText, copy]) => `<article class="factor"><h3>${esc(titleText)}</h3><p>${esc(copy)}</p></article>`).join("")}</div>
+          <h2>Questions about ${esc(service.name.toLowerCase())}</h2>
+          ${faqList(faqs)}
+        </div>
+      </div>
+      <aside class="service-aside" aria-label="Estimate and related services">
+        <div class="side-card">
+          <p class="side-kicker">Talk through the line</p>
+          <p>Tell us the length, the gates, and the town. We will estimate this ${esc(service.name.toLowerCase())} from the property.</p>
+          <p class="side-phone">${phoneLink(PHONE_DISPLAY, "phone-link-lg")}</p>
+          <p><a class="btn btn-red" href="/contact/">Request an estimate</a></p>
+        </div>
+        <div class="side-card side-card-muted">
+          <p class="side-kicker">Related</p>
+          <ul class="side-links">${related.map((item) => `<li><a href="/${item.slug}/">${esc(item.name)}</a></li>`).join("")}<li><a href="/service-areas/fort-collins/">Fort Collins lots</a></li></ul>
+        </div>
+      </aside>
+    </div>
+  </section>
+  <section class="section section-towns" style="padding-top:0">
+    <div class="wrap">
+      <h2>Towns we serve</h2>
+      <div class="area-grid">${locations.map((location) => `<a href="/service-areas/${location.slug}/">${esc(location.name)} <span aria-hidden="true">→</span></a>`).join("")}</div>
+      <p class="towns-links"><a href="/service-areas/">Service area</a> · <a href="/contact/">Request an estimate</a> · <a href="/services/">All services</a></p>
+    </div>
+  </section>`;
   return layout({
     title,
     description: service.description,
