@@ -2,6 +2,7 @@ import { mkdir, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { services, locations, homeFaqs } from "./data.mjs";
+import { homeIntro, serviceIntros, locationIntros, pageIntros } from "./intros.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const SITE = "https://www.fortcollinsfencecompany.com";
@@ -32,10 +33,42 @@ const phoneLink = (label = PHONE_DISPLAY, className = "") =>
 function formBlock(heading = "Get a free quote") {
   return `<div class="quote-card" id="quote">
     <h2>${esc(heading)}</h2>
-    <p>Tell us the town, the fence type, and what the line has to do. We use this to call you back.</p>
-    <iframe data-tally-src="${TALLY}" loading="eager" width="100%" height="552" frameborder="0" marginheight="0" marginwidth="0" title="Get a free quote"></iframe>
-    <p class="note">If the form does not load, <a href="${TALLY_PAGE}">open the quote form</a>. The source field is set to ${esc(NAME)}.</p>
+    <iframe data-tally-src="${TALLY}" loading="eager" width="100%" height="520" frameborder="0" marginheight="0" marginwidth="0" title="Get a free quote"></iframe>
+    <p class="note">If the form does not load, <a href="${TALLY_PAGE}">open the quote form</a>.</p>
   </div>`;
+}
+
+const logoLink = (className = "logo") => `<a class="${className}" href="/" aria-label="${esc(NAME)} home">
+        ${logo}
+        <span class="logo-text"><span class="logo-kicker">Fort Collins</span><span class="logo-word">Fence Company</span></span>
+      </a>`;
+
+// Every page registers its intro here so validate() can enforce the checklist.
+const introRegistry = [];
+
+function pageHero({ path: pagePath, crumbItems, h1, intro }) {
+  introRegistry.push({ path: pagePath, intro });
+  return `<div class="crumb-bar"><div class="wrap">${crumbs(crumbItems)}</div></div>
+  <section class="hero slim-hero">
+    <div class="wrap slim-grid">
+      <div class="slim-copy">
+        <p class="eyebrow">${esc(NAME)}</p>
+        <h1>${esc(h1)}</h1>
+        <p class="lede intro">${esc(intro)}</p>
+        <div class="hero-actions">${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-outline")}</div>
+      </div>
+      ${formBlock()}
+    </div>
+  </section>`;
+}
+
+function finalCta(heading, text) {
+  return `<section class="section section-cta">
+    <div class="wrap cta-inner">
+      <div><h2>${esc(heading)}</h2><p>${esc(text)}</p></div>
+      <div class="cta-actions"><a class="btn btn-dark" href="#quote">Get a free quote</a>${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-outline")}</div>
+    </div>
+  </section>`;
 }
 
 function nav(current) {
@@ -48,10 +81,7 @@ function nav(current) {
   const currentAttr = (href) => current === href ? ' aria-current="page"' : "";
   return `<header class="site-header">
     <div class="wrap header-inner">
-      <a class="logo" href="/" aria-label="${esc(NAME)} home">
-        ${logo}
-        <span class="logo-text"><span class="logo-kicker">Fort Collins</span><span class="logo-word">Fence Company</span></span>
-      </a>
+      ${logoLink()}
       <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
       <nav id="site-nav" class="nav" aria-label="Primary">
         <a href="/"${currentAttr("/")}>Home</a>
@@ -84,6 +114,10 @@ function officeHoursBlock() {
 function footer() {
   const serviceItems = services.map((service) => `<li><a href="/${service.slug}/">${esc(service.name)}</a></li>`).join("");
   return `<footer class="site-footer">
+    <div class="wrap footer-brand">
+      ${logoLink("logo footer-logo")}
+      <p>Fence installation and repair for Fort Collins and nearby Colorado towns. Call ${phoneLink(PHONE_DISPLAY)}.</p>
+    </div>
     <div class="wrap footer-grid">
       <div>
         <h2>Company</h2>
@@ -120,7 +154,7 @@ function footer() {
   </footer>
   <div class="mobile-bar">
     ${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-line")}
-    <a class="btn btn-red" href="/contact/">Free quote</a>
+    <a class="btn btn-red" href="#quote">Free quote</a>
   </div>`;
 }
 
@@ -271,62 +305,93 @@ function cards(list = services) {
   </a>`).join("")}</div>`;
 }
 
-function ctaBand(text) {
-  return `<div class="cta-band">
-    <div><h2>Request an estimate</h2><p>${esc(text)}</p></div>
-    <div class="cta-actions"><a class="btn btn-red" href="/contact/">Request an estimate</a>${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-outline")}</div>
-  </div>`;
-}
+
+const whyChoose = [
+  ["Quoted from the property", "Footage, slope, gates, and the rules for your town change the price more than the fence style does. We build the number from the line on the ground, not from a brochure range."],
+  ["Every common fence material", "Wood, vinyl, aluminum, ornamental metal, chain link, and farm fence are all installed and repaired here. The material follows the job, not a single house default."],
+  ["Repair before replace", "If the posts are sound and the failure is local, we repair that section. We say so plainly when a full replacement is the honest answer instead."],
+  ["Town-by-town rules", "Fort Collins, Loveland, Windsor, Timnath, and unincorporated Larimer County do not share one fence sheet. We check the rules that apply to your parcel, including HOA packets."],
+  ["Gates built for the opening", "Walk gates, drive gates, and sliding gates are sized to the width, the slope, and the hinge load. Most sag is an undersized post, so we set gate posts to the leaf."],
+  ["Straight answers, easy to reach", "No invented prices, review scores, or license claims on this site. Call (970) 235-8596 any day between 7 am and 7 pm, or send the quote form."]
+];
+
+const localProcess = [
+  ["Tell us about the job", "Call or send the quote form with the town, the fence type, and what the line has to do. Screening a yard, holding an animal, or securing a lot each point to a different material."],
+  ["We check the property and the rules", "We look at the line, the grade, and every gate opening. We also check the rules for that parcel, because Fort Collins, Loveland, Windsor, Timnath, and the county are not the same, and HOA rules can be stricter than the town."],
+  ["Decide repair or replacement", "Sound posts can take new boards or mesh. Posts that have rotted or heaved cannot. If the line is still mostly straight, we start with a repair."],
+  ["Build and hang the gates", "Posts, panels or fabric, and gates go in as agreed. The job is done when the gate closes without lifting it and the new section matches the fence beside it."]
+];
+
+const reviewsSection = `<section class="section section-paper" id="reviews">
+    <div class="wrap">
+      <div class="section-head"><h2>Customer reviews</h2></div>
+      <div class="two">
+        <article class="panel">
+          <h3>No reviews posted here yet</h3>
+          <p>We only show reviews written by real customers, with their permission. None are published on this site yet, so there are no star ratings, scores, or quotes on this page. We would rather show nothing than show something we cannot back up.</p>
+          <p>If we have fenced your property and you would like to share your experience, mention it when you call ${phoneLink(PHONE_DISPLAY)}.</p>
+        </article>
+        <article class="panel">
+          <h3>What to ask any fence company</h3>
+          <ul class="check-list">
+            <li>Which town&#39;s fence rules apply to my address, and does my HOA need to approve it?</li>
+            <li>What are the post size, depth, and spacing, and how are the gate posts set?</li>
+            <li>Is old-fence removal and haul-off included in the price?</li>
+            <li>What happens if the line turns out different from the quote once the ground is opened?</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>`;
 
 function homePage() {
-  const title = "Fence Company in Fort Collins, CO | Fort Collins Fence Company";
-  const description = "Fence installation and repair in Fort Collins, CO. Wood, vinyl, aluminum, chain link, farm fence, and gates. Call (970) 235-8596 for a free quote.";
-  const body = `<section class="hero"><div class="wrap hero-grid">
+  const title = "Fence Company Fort Collins CO | Vinyl Fence, Wood Fence, Aluminum Fence & More";
+  const description = "Fort Collins Fence Company installs and repairs wood, vinyl, aluminum, chain link, and farm fence in Fort Collins, CO. Call (970) 235-8596 for a free quote.";
+  introRegistry.push({ path: "/", intro: homeIntro });
+  const body = `<section class="hero" id="top"><div class="wrap hero-grid">
     <div>
       <p class="eyebrow">Fort Collins, Colorado</p>
-      <h1>Fence Company in Fort Collins, CO</h1>
-      <p class="lede">Wood, vinyl, aluminum, chain link, and metal fences for houses, commercial lots, and acreage. New lines, replacements, repairs, and gates — quoted from the property.</p>
-      <div class="hero-actions">${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-outline")}<a class="btn btn-red" href="#quote">Get a free quote</a></div>
+      <h1>Fence Company Fort Collins CO</h1>
+      <p class="lede intro">${esc(homeIntro)}</p>
+      <div class="hero-actions">${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-outline")}<a class="btn btn-red" href="#services">See fence services</a></div>
     </div>
     ${formBlock()}
   </div></section>
-  <section class="section" id="services">
+  <section class="section" id="why-choose-us">
+    <div class="wrap">
+      <div class="section-head"><h2>Why choose ${esc(NAME)}</h2><p>A fence is a long line in the ground. These are the habits that keep the quote, the build, and the gate honest.</p></div>
+      <div class="why-grid">${whyChoose.map(([heading, copy], index) => `<article class="why-item"><span class="why-num" aria-hidden="true">${index + 1}</span><h3>${esc(heading)}</h3><p>${esc(copy)}</p></article>`).join("")}</div>
+    </div>
+  </section>
+  <section class="section section-paper" id="services">
     <div class="wrap">
       <div class="section-head"><h2>Fence services</h2><p>Start with the job, then the material. A front-yard picket, a backyard screen, and a pasture line are not the same fence.</p></div>
       ${cards()}
     </div>
   </section>
-  <section class="section section-paper">
+  <section class="section" id="gallery">
     <div class="wrap">
-      <div class="section-head"><h2>Fence styles</h2><p>These are the materials we install and repair. Photos show the fence type, not a claim about a specific local job.</p></div>
+      <div class="section-head"><h2>Fence styles we build</h2><p>These photos show the fence types we install and repair. They are not labeled as specific local jobs.</p></div>
       <div class="gallery">
-        ${services.slice(0, 8).map((service) => `<a href="/${service.slug}/"><img src="${service.image}" alt="${esc(service.alt)}"><span>${esc(service.nav)}</span></a>`).join("")}
+        ${services.slice(0, 8).map((service) => `<a href="/${service.slug}/"><img src="${service.image}" alt="${esc(service.alt)}" loading="lazy" decoding="async"><span>${esc(service.nav)}</span></a>`).join("")}
       </div>
     </div>
   </section>
-  <section class="section"><div class="wrap two">
-    <article class="panel"><h2>Houses</h2><p>Backyard privacy, front-yard picket, pet yards, and gates that clear a mower. Many in-town Fort Collins jobs are a 6-foot wood or vinyl screen on the rear and side, with a shorter fence if the run faces the street.</p><p><a href="/privacy-fence/">Privacy fences</a> and <a href="/picket-fencing/">picket fences</a> follow different height rules.</p></article>
-    <article class="panel"><h2>Lots and acreage</h2><p>Commercial yards need a heavier chain-link spec and a gate a truck can use. Pasture north and east of town needs rail or wire, not a backyard panel. <a href="/commercial-fencing/">Commercial fencing</a> and <a href="/farm-fencing/">farm fencing</a> are quoted as their own jobs.</p></article>
+  ${reviewsSection}
+  <section class="section" id="process"><div class="wrap">
+    <div class="section-head"><h2>How the work goes</h2><p>The price comes from the line on the ground. These four steps are how a job moves from a call to a closed gate.</p></div>
+    <ol class="process-grid">${localProcess.map(([heading, copy], index) => `<li><span class="why-num" aria-hidden="true">${index + 1}</span><h3>${esc(heading)}</h3><p>${esc(copy)}</p></li>`).join("")}</ol>
   </div></section>
-  <section class="section section-paper"><div class="wrap">
-    <div class="section-head"><h2>How a quote is built</h2><p>The price comes from the line on the ground. These are the details that change it.</p></div>
-    <ol class="steps">
-      <li><strong>Name the job.</strong> Screen a yard, contain an animal, secure a lot, or mark a line. That choice picks the material faster than a style photo.</li>
-      <li><strong>Check the rules for that parcel.</strong> Fort Collins, Loveland, Windsor, Timnath, and unincorporated Larimer County do not share one fence sheet. HOA rules can be stricter than the town.</li>
-      <li><strong>Count gates and grade.</strong> Slope, corners, and every opening change posts and hardware. A fence with the wrong gate is a daily problem.</li>
-      <li><strong>Decide repair or replacement.</strong> Sound posts can take new boards or mesh. Posts that have rotted or heaved cannot. Start with <a href="/fence-repair/">fence repair</a> if the line is still mostly straight.</li>
-    </ol>
-  </div></section>
-  <section class="section"><div class="wrap">
-    <div class="section-head"><h2>Service area</h2><p>We work in Fort Collins and nearby communities. Each town has its own lot patterns and its own fence rules. <a href="/service-areas/">See the service area</a>.</p></div>
+  <section class="section section-paper" id="areas"><div class="wrap">
+    <div class="section-head"><h2>Areas we serve</h2><p>We work in Fort Collins and nearby communities. Each town has its own lot patterns and its own fence rules. <a href="/service-areas/">See the service area</a>.</p></div>
     <div class="area-grid">${locations.map((location) => `<a href="/service-areas/${location.slug}/">${esc(location.name)} <span aria-hidden="true">→</span></a>`).join("")}</div>
   </div></section>
-  <section class="section section-paper"><div class="wrap">
+  <section class="section" id="faq"><div class="wrap">
     <div class="section-head"><h2>Questions before you call</h2></div>
     ${faqList(homeFaqs)}
     <p><a href="/faqs/">More fence questions</a></p>
   </div></section>
-  <section class="section"><div class="wrap">${ctaBand(`Call ${PHONE_DISPLAY} or use the quote form at the top of this page.`)}</div></section>`;
+  ${finalCta("Ready for a fence quote?", `Call ${PHONE_DISPLAY} or use the quote form at the top of this page. Tell us the town, the fence type, and what the line has to do.`)}`;
   return layout({
     title,
     description,
@@ -356,15 +421,7 @@ function servicePage(service) {
   const title = `${service.title} | ${NAME}`;
   const related = service.related.map((slug) => services.find((item) => item.slug === slug));
   const faqs = service.faqs.map(([q, a]) => ({ q, a }));
-  const body = `<div class="crumb-bar"><div class="wrap">${crumbs([{ name: "Services", href: "/services/" }, { name: service.name }])}</div></div>
-  <section class="hero slim-hero service-hero">
-    <div class="wrap service-hero-inner">
-      <p class="eyebrow">${esc(NAME)}</p>
-      <h1>${esc(service.h1)}</h1>
-      <p class="lede">${esc(service.intro)}</p>
-      <div class="hero-actions">${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-outline")}<a class="btn btn-red" href="/contact/">Get a free quote</a></div>
-    </div>
-  </section>
+  const body = `${pageHero({ path: pagePath, crumbItems: [{ name: "Services", href: "/services/" }, { name: service.name }], h1: service.h1, intro: serviceIntros[service.slug] })}
   <section class="section service-body">
     <div class="wrap service-layout">
       <div class="service-main">
@@ -388,7 +445,7 @@ function servicePage(service) {
           <p>Tell us the length, the gates, and the town. We will estimate this ${esc(service.name.toLowerCase())} from the property.</p>
           <p class="side-phone">${phoneLink(PHONE_DISPLAY, "phone-link-lg")}</p>
           <p class="side-hours">${OFFICE_HOURS}</p>
-          <p><a class="btn btn-red" href="/contact/">Request an estimate</a></p>
+          <p><a class="btn btn-red" href="#quote">Request an estimate</a></p>
         </div>
         <div class="side-card side-card-muted">
           <p class="side-kicker">Related</p>
@@ -397,13 +454,14 @@ function servicePage(service) {
       </aside>
     </div>
   </section>
-  <section class="section section-towns" style="padding-top:0">
+  <section class="section section-paper section-towns">
     <div class="wrap">
       <h2>Towns we serve</h2>
       <div class="area-grid">${locations.map((location) => `<a href="/service-areas/${location.slug}/">${esc(location.name)} <span aria-hidden="true">→</span></a>`).join("")}</div>
-      <p class="towns-links"><a href="/service-areas/">Service area</a> · <a href="/contact/">Request an estimate</a> · <a href="/services/">All services</a></p>
+      <p class="towns-links"><a href="/service-areas/">Service area</a> · <a href="/contact/">Contact</a> · <a href="/services/">All services</a></p>
     </div>
-  </section>`;
+  </section>
+  ${finalCta(`Get a ${service.name.toLowerCase()} quote`, `Call ${PHONE_DISPLAY} or use the quote form at the top of this page.`)}`;
   return layout({
     title,
     description: service.description,
@@ -418,7 +476,7 @@ function servicePage(service) {
         "@type": "Service",
         name: service.h1,
         serviceType: service.name,
-        description: service.intro,
+        description: serviceIntros[service.slug],
         url: `${SITE}${pagePath}`,
         provider: { "@id": `${SITE}/#business` },
         areaServed: { "@type": "City", name: "Fort Collins", containedInPlace: { "@type": "State", name: "Colorado" } }
@@ -433,20 +491,12 @@ function locationPage(location) {
   const title = `${location.title} | ${NAME}`;
   const faqs = location.faqs.map(([q, a]) => ({ q, a }));
   const linked = location.services.map((slug) => services.find((item) => item.slug === slug));
-  const body = `<section class="page-hero"><div class="wrap">
-    ${crumbs([{ name: "Service Areas", href: "/service-areas/" }, { name: location.name }])}
-    <div class="split">
-      <div>
-        <p class="eyebrow">Service area</p>
-        <h1>${esc(location.h1)}</h1>
-        <p>${esc(location.intro)}</p>
-        ${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-dark")}
-      </div>
-      <img src="${location.image}" alt="${esc(location.alt)}">
-    </div>
-  </div></section>
+  const body = `${pageHero({ path: pagePath, crumbItems: [{ name: "Service Areas", href: "/service-areas/" }, { name: location.name }], h1: location.h1, intro: locationIntros[location.slug] })}
   <section class="section"><div class="wrap">
-    <div class="section-head"><h2>What fencing looks like here</h2><p>${esc(location.body)}</p></div>
+    <div class="split local-split">
+      <div class="section-head"><h2>What fencing looks like here</h2><p>${esc(location.body)}</p></div>
+      <img src="${location.image}" alt="${esc(location.alt)}" loading="lazy" decoding="async">
+    </div>
     <ul class="steps">${location.points.map((point) => `<li>${esc(point)}</li>`).join("")}</ul>
   </div></section>
   <section class="section section-paper"><div class="wrap">
@@ -456,9 +506,8 @@ function locationPage(location) {
   <section class="section"><div class="wrap">
     <div class="section-head"><h2>Questions about fencing in ${esc(location.name)}</h2></div>
     ${faqList(faqs)}
-    <div style="height:1.2rem"></div>
-    ${ctaBand(`Send the ${location.name} address, the fence type, and whether an HOA has to approve it.`)}
-  </div></section>`;
+  </div></section>
+  ${finalCta(`Fence quote in ${location.name}`, `Send the ${location.name} address, the fence type, and whether an HOA has to approve it.`)}`;
   return layout({
     title,
     description: location.description,
@@ -483,16 +532,22 @@ function locationPage(location) {
   });
 }
 
+const houseLotPanels = `<div class="two">
+    <article class="panel"><h2>Houses</h2><p>Backyard privacy, front-yard picket, pet yards, and gates that clear a mower. Many in-town Fort Collins jobs are a 6-foot wood or vinyl screen on the rear and side, with a shorter fence if the run faces the street.</p><p><a href="/privacy-fence/">Privacy fences</a> and <a href="/picket-fencing/">picket fences</a> follow different height rules.</p></article>
+    <article class="panel"><h2>Lots and acreage</h2><p>Commercial yards need a heavier chain-link spec and a gate a truck can use. Pasture north and east of town needs rail or wire, not a backyard panel. <a href="/commercial-fencing/">Commercial fencing</a> and <a href="/farm-fencing/">farm fencing</a> are quoted as their own jobs.</p></article>
+  </div>`;
+
 function servicesPage() {
   const pagePath = "/services/";
   const title = `Fence Services in Fort Collins, CO | ${NAME}`;
   const description = "Wood, vinyl, aluminum, metal, chain link, privacy, picket, farm fence, gates, commercial fencing, and repair in Fort Collins, CO.";
-  const body = `<section class="page-hero"><div class="wrap">
-    ${crumbs([{ name: "Services" }])}
-    <h1>Fence services in Fort Collins</h1>
-    <p class="lede">Every fence below is installed and repaired as its own job. Pick the one that matches the yard, the animals, or the site.</p>
+  const body = `${pageHero({ path: pagePath, crumbItems: [{ name: "Services" }], h1: "Fence services in Fort Collins", intro: pageIntros.services })}
+  <section class="section"><div class="wrap">${cards()}</div></section>
+  <section class="section section-paper"><div class="wrap">
+    <div class="section-head"><h2>Choosing between them</h2><p>The job usually picks the material faster than a style photo does.</p></div>
+    ${houseLotPanels}
   </div></section>
-  <section class="section"><div class="wrap">${cards()}</div></section>`;
+  ${finalCta("Not sure which fence fits?", `Call ${PHONE_DISPLAY} or use the quote form at the top of this page.`)}`;
   return layout({
     title,
     description,
@@ -506,13 +561,19 @@ function areasPage() {
   const pagePath = "/service-areas/";
   const title = `Fence Service Area around Fort Collins, CO | ${NAME}`;
   const description = "Fort Collins Fence Company serves Fort Collins, Loveland, Windsor, Timnath, Wellington, Laporte, Berthoud, Johnstown, and Larimer County.";
-  const body = `<section class="page-hero"><div class="wrap">
-    ${crumbs([{ name: "Service Areas" }])}
-    <h1>Fence service area</h1>
-    <p class="lede">We install and repair fences in Fort Collins and nearby towns. The towns are listed separately because a Fort Collins fence rule is not a Loveland, Windsor, or county rule.</p>
+  const body = `${pageHero({ path: pagePath, crumbItems: [{ name: "Service Areas" }], h1: "Fence service area", intro: pageIntros["service-areas"] })}
+  <section class="section"><div class="wrap">
+    <div class="section-head"><h2>Towns we serve</h2></div>
     <div class="area-grid">${locations.map((location) => `<a href="/service-areas/${location.slug}/">${esc(location.name)} <span aria-hidden="true">→</span></a>`).join("")}</div>
   </div></section>
-  <section class="section"><div class="wrap">${ctaBand("Tell us the town on the quote form so the estimate uses the right lot, not a copied city name.")}</div></section>`;
+  <section class="section section-paper"><div class="wrap">
+    <div class="section-head"><h2>Why the town matters</h2><p>The same fence can be legal in one place and not in the next.</p></div>
+    <div class="two">
+      <article class="panel"><h3>Inside Fort Collins</h3><p>Fences 6 feet and under generally do not need a building permit. Front yards are generally limited to 4 feet and rear yards to 6 feet. See the <a href="/service-areas/fort-collins/">Fort Collins page</a>.</p></article>
+      <article class="panel"><h3>Neighboring towns</h3><p>Loveland, Windsor, Timnath, Berthoud, and Johnstown set their own rules, and many neighborhoods add HOA review on top. We confirm the town before we set a height.</p></article>
+    </div>
+  </div></section>
+  ${finalCta("Tell us which town", "Add the town to the quote form so the estimate uses the right lot and the right rules, not a copied city name.")}`;
   return layout({
     title,
     description,
@@ -545,14 +606,15 @@ function faqPage() {
     }
   ];
   const faqs = [...homeFaqs, ...extra];
-  const body = `<section class="page-hero"><div class="wrap">
-    ${crumbs([{ name: "FAQs" }])}
-    <h1>Fence questions</h1>
-    <p class="lede">Straight answers on price, permits, materials, and repairs. Fort Collins rules are labeled as Fort Collins rules.</p>
+  const body = `${pageHero({ path: pagePath, crumbItems: [{ name: "FAQs" }], h1: "Fence questions", intro: pageIntros.faqs })}
+  <section class="section"><div class="wrap">
     ${faqList(faqs)}
-    <p>Fort Collins publishes its height and building-permit basics on the <a href="${CITY_RULES}">city’s rules for common projects</a>.</p>
-    ${ctaBand("If your lot is outside Fort Collins, say which town. The answer changes.")}
-  </div></section>`;
+  </div></section>
+  <section class="section section-paper"><div class="wrap prose">
+    <h2>Check the rules for your lot</h2>
+    <p>Fort Collins publishes its height and building-permit basics on the <a href="${CITY_RULES}">city&#39;s rules for common projects</a>. If your lot is outside Fort Collins, say which town on the quote form, because the answer changes. See the <a href="/service-areas/">service area</a> for the towns we cover.</p>
+  </div></section>
+  ${finalCta("Still have a question?", `Call ${PHONE_DISPLAY} or use the quote form at the top of this page.`)}`;
   return layout({
     title,
     description,
@@ -566,24 +628,19 @@ function aboutPage() {
   const pagePath = "/about/";
   const title = `About ${NAME}`;
   const description = "Fort Collins Fence Company installs and repairs wood, vinyl, aluminum, chain link, metal, and farm fence for Fort Collins and nearby Colorado towns.";
-  const body = `<section class="page-hero"><div class="wrap">
-    ${crumbs([{ name: "About" }])}
-    <div class="split">
-      <div>
-        <h1>About ${esc(NAME)}</h1>
-        <p>${esc(NAME)} installs and repairs fences for houses, commercial lots, and agricultural properties in Fort Collins and nearby towns. The work is wood, vinyl, aluminum, ornamental metal, chain link, picket, privacy, farm fence, and gates.</p>
-        <p>No public storefront is listed. Quotes are based on the property: footage, gates, grade, and the rules for that town. We do not publish a per-foot price, a license number, or a review score on this site.</p>
-        ${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-dark")}
-      </div>
-      <img src="/images/aluminum.jpg" alt="Black aluminum fence with vertical pickets">
+  const body = `${pageHero({ path: pagePath, crumbItems: [{ name: "About" }], h1: `About ${NAME}`, intro: pageIntros.about })}
+  <section class="section"><div class="wrap">
+    <div class="split local-split">
+      <div class="section-head"><h2>What we work on</h2><p>Houses, commercial lots, and agricultural properties get different fences. We install and repair each one as its own job, and we send you to the page that matches your yard.</p><p><a href="/services/">See all fence services</a> or <a href="/service-areas/">the towns we cover</a>.</p></div>
+      <img src="/images/aluminum.jpg" alt="Black aluminum fence with vertical pickets" loading="lazy" decoding="async">
     </div>
   </div></section>
-  <section class="section"><div class="wrap prose">
+  <section class="section section-paper"><div class="wrap prose">
     <h2>What we will not invent</h2>
     <p>Fort Collins is in Colorado, and the phone number published here is ${PHONE_DISPLAY}. Fence rules for Loveland, Windsor, Timnath, Wellington, Berthoud, Johnstown, and Larimer County are not copies of the Fort Collins sheet.</p>
-    <p>Photos on this site show fence types. They are not labeled as a specific completed job unless we say so.</p>
-    <p><a href="/services/">See the services</a> or <a href="/service-areas/">the towns we cover</a>.</p>
-  </div></section>`;
+    <p>Photos on this site show fence types. They are not labeled as a specific completed job unless we say so, and this site does not display reviews we cannot verify.</p>
+  </div></section>
+  ${finalCta("Talk through your fence", `Call ${PHONE_DISPLAY} or use the quote form at the top of this page.`)}`;
   return layout({
     title,
     description,
@@ -597,16 +654,17 @@ function contactPage() {
   const pagePath = "/contact/";
   const title = `Free Fence Quote in Fort Collins, CO | ${NAME}`;
   const description = `Request a fence estimate from ${NAME} or call ${PHONE_DISPLAY}. The form records this site as the lead source.`;
-  const body = `<section class="page-hero"><div class="wrap">
-    ${crumbs([{ name: "Free Quote" }])}
-    <div class="split">
-      <div>
-        <h1>Request a fence estimate</h1>
-        <p>Send the town, the type of fence, and a short note about gates or repairs. Only use this form for an estimate. Do not send payment information.</p>
-        <p>${phoneLink(PHONE_DISPLAY)} · Fort Collins, Colorado</p>
-      </div>
-      ${formBlock("Get a free quote")}
+  const body = `${pageHero({ path: pagePath, crumbItems: [{ name: "Contact" }], h1: "Request a fence estimate", intro: pageIntros.contact })}
+  <section class="section"><div class="wrap">
+    <div class="section-head"><h2>Ways to reach us</h2></div>
+    <div class="two">
+      <article class="panel"><h3>Call</h3><p>${phoneLink(PHONE_DISPLAY, "phone-link-lg")}</p><p>${OFFICE_HOURS}. No public storefront is listed, so work is quoted and done at the property.</p></article>
+      <article class="panel"><h3>What to include in the form</h3><ul class="check-list"><li>The town and the address of the fence.</li><li>The type of fence, or the job it has to do.</li><li>Gates, slope, and whether an old fence has to come out.</li><li>Whether an HOA has to approve it.</li></ul></article>
     </div>
+  </div></section>
+  <section class="section section-paper"><div class="wrap">
+    <div class="section-head"><h2>What happens next</h2></div>
+    <ol class="process-grid">${localProcess.slice(0, 3).map(([heading, copy], index) => `<li><span class="why-num" aria-hidden="true">${index + 1}</span><h3>${esc(heading)}</h3><p>${esc(copy)}</p></li>`).join("")}</ol>
   </div></section>`;
   return layout({
     title,
@@ -617,7 +675,7 @@ function contactPage() {
       path: pagePath,
       title,
       description,
-      crumbsItems: [{ name: "Free Quote", href: pagePath }],
+      crumbsItems: [{ name: "Contact", href: pagePath }],
       mainEntity: { "@id": `${SITE}/#business` }
     })
   });
@@ -627,13 +685,11 @@ function privacyPage() {
   const pagePath = "/privacy-policy/";
   const title = `Privacy Policy | ${NAME}`;
   const description = `How ${NAME} handles quote requests sent through the estimate form and phone calls.`;
-  const body = `<section class="page-hero"><div class="wrap prose">
-    ${crumbs([{ name: "Privacy policy" }])}
-    <h1>Privacy policy</h1>
-    <p>This policy covers ${SITE.replace("https://", "")}. If you call ${PHONE_DISPLAY}, we use that number to talk about your fence. If you submit the quote form, the form is provided by Tally and includes a hidden source field set to “${esc(NAME)}” so the lead can be identified.</p>
-    <p>We use the name, phone, email, and project notes you submit to respond to the estimate. We do not ask for payment card numbers through this form. We do not sell the information you send.</p>
-    <p>The form provider processes the submission on its own systems. Their terms apply to that processing. This site does not run a separate customer account or a public storefront mailing list.</p>
-    <p>Questions about a submission can be sent through the <a href="/contact/">quote form</a> or by phone.</p>
+  const body = `${pageHero({ path: pagePath, crumbItems: [{ name: "Privacy policy" }], h1: "Privacy policy", intro: pageIntros.privacy })}
+  <section class="section"><div class="wrap prose">
+    <p>This policy covers ${SITE.replace("https://", "")}. We use the name, phone, email, and project notes you submit to respond to the estimate.</p>
+    <p>The form provider processes the submission on its own systems, and their terms apply to that processing. This site does not run a separate customer account or a public mailing list.</p>
+    <p>Questions about a submission can be sent through the <a href="#quote">quote form</a> or by phone at ${phoneLink(PHONE_DISPLAY)}.</p>
   </div></section>`;
   return layout({
     title,
@@ -648,12 +704,10 @@ function termsPage() {
   const pagePath = "/terms/";
   const title = `Terms | ${NAME}`;
   const description = `Estimate terms for ${NAME}. A quote is not a contract, and property lines and HOA approval stay with the owner.`;
-  const body = `<section class="page-hero"><div class="wrap prose">
-    ${crumbs([{ name: "Terms" }])}
-    <h1>Terms</h1>
-    <p>An estimate from ${esc(NAME)} is a price for the fence described at that time. It is not a contract until both sides agree in writing. Footage, gates, grade, buried utilities, and fence rules can change the number after the line is seen.</p>
-    <p>You are responsible for the property line, for marking private utilities the public locators do not cover, and for any HOA or neighbor approval. We do not decide a boundary dispute. Fort Collins, other towns, and Larimer County can require different heights and permits. Approval of a permit is not guaranteed by a quote.</p>
-    <p>This site does not publish a warranty term, a license number, or a financing offer. Do not send payment through the quote form.</p>
+  const body = `${pageHero({ path: pagePath, crumbItems: [{ name: "Terms" }], h1: "Terms", intro: pageIntros.terms })}
+  <section class="section"><div class="wrap prose">
+    <p>Fort Collins, other towns, and Larimer County can require different heights and permits. Approval of a permit is not guaranteed by a quote.</p>
+    <p>Do not send payment through the quote form.</p>
   </div></section>`;
   return layout({
     title,
@@ -668,12 +722,13 @@ function notFoundPage() {
   const pagePath = "/404.html";
   const title = `Page not found | ${NAME}`;
   const description = "That page is not on the Fort Collins Fence Company site.";
-  const body = `<section class="page-hero"><div class="wrap">
-    <h1>That page is not on this site.</h1>
+  const body = `${pageHero({ path: pagePath, crumbItems: [{ name: "Page not found" }], h1: "That page is not on this site", intro: pageIntros.notFound })}
+  <section class="section"><div class="wrap prose">
     <p>Use the menu, view <a href="/services/">fence services</a>, or call ${phoneLink(PHONE_DISPLAY)}.</p>
   </div></section>`;
   return layout({ title, description, path: pagePath, body, robots: "noindex,follow" });
 }
+
 
 const pages = [
   ["index.html", homePage()],
@@ -732,6 +787,15 @@ function validate() {
     console.log(services.map((service) => `${words(service.card)}\t${service.slug}`).join("\n"));
     throw new Error(`Card descriptions vary too much (${min}-${max} words)`);
   }
+  for (const { path: pagePath, intro } of introRegistry) {
+    const sentences = intro.trim().split(/(?<=[.!?])\s+(?=[A-Z])/);
+    if (!intro.startsWith(NAME)) throw new Error(`Intro on ${pagePath} must start with ${NAME}`);
+    if (sentences.length < 5 || sentences.length > 6) throw new Error(`Intro on ${pagePath} has ${sentences.length} sentences`);
+  }
+  if (introRegistry.length !== pages.length) throw new Error(`Intros ${introRegistry.length} vs pages ${pages.length}`);
+  const home = pages.find(([file]) => file === "index.html")[1];
+  if (!home.includes("<h1>Fence Company Fort Collins CO</h1>")) throw new Error("Home H1 mismatch");
+  if (!home.includes("<title>Fence Company Fort Collins CO | Vinyl Fence, Wood Fence, Aluminum Fence &amp; More</title>")) throw new Error("Home title mismatch");
   const titles = new Set();
   const descriptions = new Set();
   for (const [, html] of pages) {
