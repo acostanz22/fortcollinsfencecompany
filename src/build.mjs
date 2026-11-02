@@ -66,7 +66,7 @@ function finalCta(heading, text) {
   return `<section class="section section-cta">
     <div class="wrap cta-inner">
       <div><h2>${esc(heading)}</h2><p>${esc(text)}</p></div>
-      <div class="cta-actions"><a class="btn btn-dark" href="#quote">Get a free quote</a>${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-outline")}</div>
+      <div class="cta-actions"><a class="btn btn-dark" href="#quote">Request a free quote</a>${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-outline")}</div>
     </div>
   </section>`;
 }
@@ -98,6 +98,7 @@ function nav(current) {
         <a href="/contact/"${currentAttr("/contact/")}>Contact</a>
       </nav>
       ${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-red header-call")}
+      <a class="btn btn-outline header-quote" href="#quote">Free quote</a>
     </div>
   </header>`;
 }
@@ -316,15 +317,15 @@ const whyChoose = [
 ];
 
 const localProcess = [
-  ["Tell us about the job", "Call or send the quote form with the town, the fence type, and what the line has to do. Screening a yard, holding an animal, or securing a lot each point to a different material."],
-  ["We check the property and the rules", "We look at the line, the grade, and every gate opening. We also check the rules for that parcel, because Fort Collins, Loveland, Windsor, Timnath, and the county are not the same, and HOA rules can be stricter than the town."],
-  ["Decide repair or replacement", "Sound posts can take new boards or mesh. Posts that have rotted or heaved cannot. If the line is still mostly straight, we start with a repair."],
-  ["Build and hang the gates", "Posts, panels or fabric, and gates go in as agreed. The job is done when the gate closes without lifting it and the new section matches the fence beside it."]
+  ["Request a quote", `Call or send the quote form with the town, the fence type, and roughly how much line you need. ${PHONE_DISPLAY} is answered every day from 7 am to 7 pm.`],
+  ["Discuss the project", "We talk through the goal, the gates, and the ground, and we walk the property when an on-site look is needed. Fort Collins, Loveland, Windsor, Timnath, and Larimer County do not share one fence sheet, so we check the rules that apply to your parcel."],
+  ["Receive your estimate", "You get a free estimate built from the footage, height, material, gates, and what we saw on the lot, including whether a repair or a replacement is the honest answer."],
+  ["Schedule installation", "Once you approve the estimate, we schedule the install, order materials, and build the fence and gates as agreed."]
 ];
 
 const reviewsSection = `<section class="section section-paper" id="reviews">
     <div class="wrap">
-      <div class="section-head"><h2>Customer reviews</h2></div>
+      <div class="section-head"><h2>Customer Reviews</h2></div>
       <div class="two">
         <article class="panel">
           <h3>No reviews posted here yet</h3>
@@ -353,25 +354,25 @@ function homePage() {
       <p class="eyebrow">Fort Collins, Colorado</p>
       <h1>Fence Company Fort Collins CO</h1>
       <p class="lede intro">${esc(homeIntro)}</p>
-      <div class="hero-actions">${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-outline")}<a class="btn btn-red" href="#services">See fence services</a></div>
+      <div class="hero-actions">${phoneLink(`Call ${PHONE_DISPLAY}`, "btn btn-outline")}<a class="btn btn-red" href="#quote">Request a free quote</a></div>
     </div>
     ${formBlock()}
   </div></section>
   <section class="section" id="why-choose-us">
     <div class="wrap">
-      <div class="section-head"><h2>Why choose ${esc(NAME)}</h2><p>A fence is a long line in the ground. These are the habits that keep the quote, the build, and the gate honest.</p></div>
+      <div class="section-head"><h2>Why Choose Us</h2><p>A fence is a long line in the ground. These are the habits that keep the quote, the build, and the gate honest.</p></div>
       <div class="why-grid">${whyChoose.map(([heading, copy], index) => `<article class="why-item"><span class="why-num" aria-hidden="true">${index + 1}</span><h3>${esc(heading)}</h3><p>${esc(copy)}</p></article>`).join("")}</div>
     </div>
   </section>
   <section class="section section-paper" id="services">
     <div class="wrap">
-      <div class="section-head"><h2>Fence services</h2><p>Start with the job, then the material. A front-yard picket, a backyard screen, and a pasture line are not the same fence.</p></div>
+      <div class="section-head"><h2>Our Fence Services</h2><p>Start with the job, then the material. A front-yard picket, a backyard screen, and a pasture line are not the same fence.</p></div>
       ${cards()}
     </div>
   </section>
   <section class="section" id="gallery">
     <div class="wrap">
-      <div class="section-head"><h2>Fence styles we build</h2><p>These photos show the fence types we install and repair. They are not labeled as specific local jobs.</p></div>
+      <div class="section-head"><h2>Our Gallery</h2><p>These photos show the fence types we install and repair. They are not labeled as specific local jobs.</p></div>
       <div class="gallery">
         ${services.slice(0, 8).map((service) => `<a href="/${service.slug}/"><img src="${service.image}" alt="${esc(service.alt)}" loading="lazy" decoding="async"><span>${esc(service.nav)}</span></a>`).join("")}
       </div>
@@ -379,19 +380,19 @@ function homePage() {
   </section>
   ${reviewsSection}
   <section class="section" id="process"><div class="wrap">
-    <div class="section-head"><h2>How the work goes</h2><p>The price comes from the line on the ground. These four steps are how a job moves from a call to a closed gate.</p></div>
+    <div class="section-head"><h2>Our Process</h2><p>The price comes from the line on the ground. These four steps are how a job moves from a call to a closed gate.</p></div>
     <ol class="process-grid">${localProcess.map(([heading, copy], index) => `<li><span class="why-num" aria-hidden="true">${index + 1}</span><h3>${esc(heading)}</h3><p>${esc(copy)}</p></li>`).join("")}</ol>
   </div></section>
   <section class="section section-paper" id="areas"><div class="wrap">
-    <div class="section-head"><h2>Areas we serve</h2><p>We work in Fort Collins and nearby communities. Each town has its own lot patterns and its own fence rules. <a href="/service-areas/">See the service area</a>.</p></div>
+    <div class="section-head"><h2>Areas We Serve</h2><p>We work in Fort Collins and nearby communities. Each town has its own lot patterns and its own fence rules. <a href="/service-areas/">See the service area</a>.</p></div>
     <div class="area-grid">${locations.map((location) => `<a href="/service-areas/${location.slug}/">${esc(location.name)} <span aria-hidden="true">→</span></a>`).join("")}</div>
   </div></section>
   <section class="section" id="faq"><div class="wrap">
-    <div class="section-head"><h2>Questions before you call</h2></div>
+    <div class="section-head"><h2>FAQ</h2></div>
     ${faqList(homeFaqs)}
     <p><a href="/faqs/">More fence questions</a></p>
   </div></section>
-  ${finalCta("Ready for a fence quote?", `Call ${PHONE_DISPLAY} or use the quote form at the top of this page. Tell us the town, the fence type, and what the line has to do.`)}`;
+  ${finalCta("Request a Free Quote", `Call ${PHONE_DISPLAY} or use the quote form at the top of this page. Tell us the town, the fence type, and what the line has to do.`)}`;
   return layout({
     title,
     description,
